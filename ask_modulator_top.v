@@ -12,16 +12,16 @@ module ask_modulator_top (
     wire data_in;
     
     // PRBS generator signals
-    wire [1:0] bit_rate_sel;      // Bit rate selection from SW[2:1]
-    wire manual_override;         // Manual mode from SW[9]
-    wire prbs_data;               // PRBS output
-    wire prbs_bit_clock;          // PRBS bit clock for monitoring
+    wire [1:0] bit_rate_sel;      
+    wire manual_override;       
+    wire prbs_data;              
+    wire prbs_bit_clock;          
     
     assign clk = CLOCK_50;        
     assign reset = ~KEY[0];       
-    assign bit_rate_sel = SW[2:1];     // SW[2:1]: 00=1kbps, 01=10kbps, 10=100kbps
-    assign manual_override = SW[9];     // SW[9]: 1=manual (SW[0]), 0=PRBS
-    assign data_in = manual_override ? SW[0] : prbs_data;  // Mode selection         
+    assign bit_rate_sel = SW[2:1];     
+    assign manual_override = SW[9];    
+    assign data_in = manual_override ? SW[0] : prbs_data;       
     
     // tạo clock chậm để thấy LED nháy  // AI Generate
     reg [23:0] slow_clk_counter;
@@ -41,14 +41,12 @@ module ask_modulator_top (
         end
     end
 
-    // Wire declarations
     wire [11:0] carrier_out_w;        
     wire [11:0] carrier_out_slow_w;
     wire amplitude_control_w;         
     wire [11:0] dac_out;             
     wire [11:0] dac_out_slow;       
 
-    // PRBS Generator instantiation
     prbs_generator PRBS (
         .clk(clk),
         .reset(reset),
@@ -88,19 +86,16 @@ module ask_modulator_top (
         .ask_modulated_out(dac_out_slow)
     );
     
-
-    // LED Status Indicators
-    assign LEDR[0] = data_in;                      // Current data bit (SW[0] or PRBS)
-    assign LEDR[1] = amplitude_control_w;          // Synchronized amplitude control
-    assign LEDR[2] = prbs_bit_clock;               // PRBS bit clock indicator
-    assign LEDR[4:3] = bit_rate_sel;               // Show selected bit rate
-    assign LEDR[8:5] = 4'b0;                       // Unused
-    assign LEDR[17:9] = carrier_out_slow_w[11:3];  // Carrier amplitude (slow)
+    assign LEDR[0] = data_in;                    
+    assign LEDR[1] = amplitude_control_w;         
+    assign LEDR[2] = prbs_bit_clock;            
+    assign LEDR[4:3] = bit_rate_sel;             
+    assign LEDR[8:5] = 4'b0;                   
+    assign LEDR[17:9] = carrier_out_slow_w[11:3];  
     
-    assign LEDG[0] = manual_override;              // Green: Manual mode indicator
-    assign LEDG[8:1] = dac_out_slow[11:4];         // DAC output (slow)
+    assign LEDG[0] = manual_override;              
+    assign LEDG[8:1] = dac_out_slow[11:4];        
     
-    // DAC Output to GPIO (high-speed, for oscilloscope)
     assign GPIO_0[7:0] = dac_out[11:4];  
 
 endmodule
